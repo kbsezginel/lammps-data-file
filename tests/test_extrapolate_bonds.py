@@ -1,4 +1,4 @@
-from lammps_data import extrapolate_bonds
+from lammps_data.bonds import extrapolate_bonds
 
 
 def test_atoms_too_close_should_not_be_bonded():
@@ -57,5 +57,4 @@ def test_ethane_should_have_seven_bonds():
                       (4, 7)]
     expected_bonds = { frozenset(s) for s in expected_bonds }
     bonds = { frozenset(s) for s in bonds }
-
     assert len(expected_bonds ^ bonds) == 0
