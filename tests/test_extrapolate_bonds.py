@@ -34,6 +34,14 @@ def test_si_atoms_at_gt_2_77_angstrom_should_not_be_bonded():
     bonds = extrapolate_bonds(atoms)
     assert len(bonds) == 0
 
+def test_bond_tuples_should_be_sorted_by_atom_index():
+    atoms = [(0.0, 0.0, 0.0, 1), (0.0, 0.0, 0.16, 1)]
+    bonds = extrapolate_bonds(atoms)
+    assert bonds == [(0,1)]
+    atoms = [(0.0, 0.0, 0.16, 1), (0.0, 0.0, 0.0, 1)]
+    bonds = extrapolate_bonds(atoms)
+    assert bonds == [(0,1)]
+
 def test_ethane_should_have_seven_bonds():
 
     atoms = [( 1.185080, -0.003838,  0.987524, 1),

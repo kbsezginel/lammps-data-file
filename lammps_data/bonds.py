@@ -45,6 +45,6 @@ def extrapolate_bonds(atoms):
 
             max_bond_distance = (rcov[atoms_z[i][1][3]] + rcov[atoms_z[j][1][3]] + RADIUS_BUFFER)
             if distance >= 0.16 and distance <= max_bond_distance:
-                bonds.append((atoms_z[i][0],atoms_z[j][0]))
+                bonds.append(tuple(sorted((atoms_z[i][0],atoms_z[j][0]))))
 
     return bonds
