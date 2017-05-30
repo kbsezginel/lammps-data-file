@@ -49,3 +49,33 @@ def extrapolate_bonds(atoms):
                 bonds.append(tuple(sorted((atoms_z[i][0], atoms_z[j][0]))))
 
     return bonds
+
+
+def extrapolate_periodic_bonds(atoms, cell_vectors):
+    bonds = []
+
+    atoms_z = list(enumerate(atoms))
+
+    max_rad = max([rcov[a[1][3]] for a in atoms_z])
+
+    translations = [[0, 0, 0]]
+    for v in cell_vectors:
+        translations.append(v)
+        translations.append([-v[0], -v[1], -v[2]])
+
+    for i in range(0, len(atoms_z)):
+        max_cutoff = rcov[atoms_z[i][1][3]] + max_rad + RADIUS_BUFFER
+        atom1 = atoms_z[i][1][:3]
+        for j in range(i + 1, len(atoms_z)):
+            atom2 = atoms_z[j][1][:3]
+            max_bond_distance = (rcov[atoms_z[i][1][3]] + rcov[atoms_z[j][1][3]] + RADIUS_BUFFER)
+            for t in translations:
+                atom2_t = [atom2[0] + t[0], atom2[1] + t[1], atom2[2] + t[2]]
+                distance = ((atom1[0] - atom2_t[0]) ** 2 +
+                            (atom1[1] - atom2_t[1]) ** 2 +
+                            (atom1[2] - atom2_t[2]) ** 2) ** 0.5
+                if distance >= 0.16 and distance <= max_bond_distance:
+                    bonds.append(tuple(sorted((atoms_z[i][0], atoms_z[j][0]))))
+                    break
+
+    return bonds
