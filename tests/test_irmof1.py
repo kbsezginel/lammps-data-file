@@ -6,7 +6,7 @@ from lammps_data.dihedrals import get_dihedrals
 expected_cell_vectors = [[25.832, 0, 0], [0, 25.832, 0], [0, 0, 25.832]]
 
 
-def test_irmof1():
+def test_irmof1_and_packed_irmof1_should_return_correct_cell_vectors_and_number_of_atoms_bonds():
     irmof1 = MOF('tests/IRMOF-1.cif')
 
     irmof1.calculate_vectors()
