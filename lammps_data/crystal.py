@@ -1,5 +1,7 @@
 import math
 import os
+import copy
+import numpy as np
 
 from lammps_data import ase
 
@@ -31,9 +33,8 @@ class MOF:
             self.uc_size = molecule['uc_size']
             self.uc_angle = molecule['uc_angle']
             self.atoms = molecule['atoms']
-            # self.separate_atoms()
-            # self.unit_cell_volume()
-            # self.pbc_parameters()
+            self.separate_atoms()
+            self.unit_cell_volume()
 
     def __repr__(self):
         return "<MOF object: %s>" % (self.name)
@@ -93,14 +94,22 @@ class MOF:
         trans_vec = Packing.translation_vectors(self.packing_factor, self.uc_vectors)
         self.packed_coors = Packing.uc_coors(trans_vec, self.packing_factor, self.uc_vectors, self.atom_coors)
 
-        extended_structure = {'atom_names': [], 'atom_coors': [], 'name': self.name}
+        extended_structure = {'atom_names': [], 'atom_coors': [], 'atoms': [], 'name': self.name}
         for unit_cell in self.packed_coors:
             for coor_index, coor in enumerate(unit_cell):
                 atom_name = self.atom_names[coor_index]
+                atom_number = self.atoms[coor_index][3]
                 extended_structure['atom_names'].append(atom_name)
                 extended_structure['atom_coors'].append(coor)
+                extended_structure['atoms'].append((coor[0], coor[1], coor[2], atom_number))
 
-        return extended_structure
+        packed_mof = copy.deepcopy(self)
+        packed_mof.uc_size = np.array(self.uc_size) * np.array(self.packing_factor)
+        packed_mof.uc_vectors = np.array(self.uc_vectors) * np.array(self.packing_factor)
+        packed_mof.atoms = extended_structure['atoms']
+        packed_mof.atom_names = extended_structure['atom_names']
+        packed_mof.atom_coors = extended_structure['atom_coors']
+        return packed_mof
 
     def separate_atoms(self):
         """

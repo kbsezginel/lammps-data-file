@@ -17,9 +17,11 @@ def get_dihedrals(bonds):
 
         for bond1 in atom1_bonds:
             for bond2 in atom2_bonds:
-                dihedral = set(bond1 + bond2)
+                atom0 = [b for b in bond1 if b != atom1][0]
+                atom3 = [b for b in bond2 if b != atom2][0]
+                dihedral = (min(atom0,atom3), atom1, atom2, max(atom0,atom3))
                 # Make sure dihedral is not a loop
-                if len(dihedral) == 4:
+                if len(set(dihedral)) == 4:
                     dihedrals.append(tuple(dihedral))
 
     return sorted(dihedrals)
