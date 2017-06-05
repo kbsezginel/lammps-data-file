@@ -1,4 +1,6 @@
 # lammps-data-file
+![travis](https://travis-ci.org/WilmerLab/lammps-data-file.svg?branch=master)
+
 Topology analysis and force field assignment for [Lammps][lammps] simulation package.
 
 ## Installation
