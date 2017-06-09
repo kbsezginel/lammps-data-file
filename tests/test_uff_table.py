@@ -1,6 +1,6 @@
 import pytest
-from lammps_data.uff_table import UffTable, NonExistentElementError,
-                                  NonExistentCoordinationError, NonExistentAngleError,
+from lammps_data.uff_table import UffTable, NonExistentElementError, \
+                                  NonExistentCoordinationError, NonExistentAngleError, \
                                   LookupMultiplicityError
 
 
