@@ -1,3 +1,4 @@
+import math
 
 # From Pyykko doi: 10.1002/chem.200800987
 rcov = [
@@ -79,3 +80,24 @@ def extrapolate_periodic_bonds(atoms, cell_vectors):
                     break
 
     return bonds
+
+
+def calculate_bond_length(bond, atoms, limit=(0.5, 5)):
+    """ Calculate bond distance for given bond and atom list """
+    a1, a2 = bond
+    x1, y1, z1 = atoms[a1][:3]
+    x2, y2, z2 = atoms[a2][:3]
+    distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
+    if distance > limit[1]:
+        raise BondLengthLimitError("Bond length of %s between %i and %i is higher than limit %s"
+                                   % (str(distance), bond[0], bond[1], str(limit[1])))
+    elif distance < limit[0]:
+        raise BondLengthLimitError("Bond length of %s between %i and %i is lower than limit %s"
+                                   % (str(distance), bond[0], bond[1], str(limit[0])))
+    else:
+        return distance
+
+
+class BondLengthLimitError(Exception):
+    """ Raised when bond length is higher or lower than allowed limit """
+    pass
