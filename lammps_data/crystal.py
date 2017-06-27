@@ -4,6 +4,8 @@ import copy
 import numpy as np
 
 from lammps_data import ase
+from lammps_data.uff_table import UffTable
+from lammps_data.angles import get_angles, calculate_angle
 
 
 class MOF:
@@ -257,6 +259,105 @@ class MOF:
             file_path = os.path.join(export_dir, self.name + '.' + file_format)
             ase.write(file_path, self.ase_atoms, file_format=file_format)
 
+    def topology(self):
+        """
+        Get topology of the MOF object.
+        --------------------------------------------------------------------------------------------
+        Instead of determining bonds and agles separately it might be better idea to get them all
+        together here since we need them before atom typing. Also we need to figure out which bonds
+        are crossing the boundaries to calculate all angles correctly.
+        If all topology is determined together it would also be more efficient since we can
+        calculate the angles and bonds at the same time.
+        """
+        self.bonds, self.periodic_bonds = [], []
+        self.angles, self.periodic_angles = [], []
+        self.dihedrals, self.periodic_dihedrals = [], []
+        self.calculate_vectors()
+
+        atoms_list = list(enumerate(self.atoms))
+        max_rad = max([rcov[a[1][3]] for a in atoms_list])
+        translations = [[0, 0, 0]]
+        for v in self.cell_vectors:
+            translations.append(v)
+            translations.append([-v[0], -v[1], -v[2]])
+
+        for i in range(0, len(atoms_list)):
+            max_cutoff = rcov[atoms_list[i][1][3]] + max_rad + RADIUS_BUFFER
+            atom1 = atoms_list[i][1][:3]
+
+            neighbors = dict(bonds=[], atoms=[], bond_lengths=[])
+            for j in range(i + 1, len(atoms_list)):
+                atom2 = atoms_list[j][1][:3]
+                max_bond_distance = (rcov[atoms_list[i][1][3]] + rcov[atoms_list[j][1][3]] + RADIUS_BUFFER)
+                for t in translations:
+                    atom2_t = [atom2[0] + t[0], atom2[1] + t[1], atom2[2] + t[2]]
+                    distance = ((atom1[0] - atom2_t[0]) ** 2 +
+                                (atom1[1] - atom2_t[1]) ** 2 +
+                                (atom1[2] - atom2_t[2]) ** 2) ** 0.5
+                    if distance >= 0.16 and distance <= max_bond_distance:
+                        bonded_atoms = sorted((atoms_list[i][0], atoms_list[j][0]))
+
+                        neighbors['atoms'].append((atom2_t[0], atom2_t[1], atom2_t[2], j))
+                        neighbors['bonds'].append((bonded_atoms[0], bonded_atoms[1]))
+                        neighbors['bond_lengths'].append(distance)
+                        self.bonds.append((bonded_atoms[0], bonded_atoms[1], distance))
+                        if t = [0, 0, 0]:
+                            self.periodic_bonds.append((bonded_atoms[0], bonded_atoms[1], distance))
+                        break
+            # Get angles
+            neighbors['angles'] = get_angles(neighbors['bonds'])
+            neighbors['angle_values'] = []
+            for angle in neighbors['angles']:
+                p1 = [a[3] for a in neighbors['atoms'] if a[3] == angle[0]] # There must a better way of doing this
+                p2 = ...
+                p3 = ...
+                neighbors['angle_values'].append(calculate_angle(p1, p2, p3))
+
+        return bonds
+
+    def assign_UFF_atom_types(self, tolerance=10):
+        uff = UffTable()
+        self.atom_types = []
+        self.unique_atom_types = dict()
+        for atom_idx, atom in enumerate(self.atoms):
+            atom_bonds = [x for x in self.bonds if atom_idx in x]
+            n_bonds = len(atom_bonds)
+            element = self.atom_names[atom_idx]
+            """
+
+            Figure out periodic bonds and calculate angles for those separately
+            -> Alternatively first go through each atom and calculate bonds + angles
+
+            """
+            atom_angles = [calculate_angle(self.atoms[a[0]][:3], self.atoms[a[1]][:3], self.atoms[a[2]][:3]) for a in get_angles(atom_bonds)]
+            avg_angle = sum(atom_angles) / len(atom_angles)
+            if all([math.isclose(angle, avg_angle, abs_tol=tolerance) for angle in atom_angles]):
+                uff_row = uff.lookup(element, n_bonds, avg_angle)
+                self.atom_types.append(uff_row['type'])
+                if uff_row['type'] not in self.unique_atom_types:
+                    self.unique_atom_types[uff_row['type']] = uff_row
+            elif n_bonds == 4:
+                # Check square planar case
+                ortho = all([math.isclose(angle, avg_angle, abs_tol=tolerance) for angle in sorted(atom_angles)[:4]])
+                linear = all([math.isclose(angle, avg_angle, abs_tol=tolerance) for angle in sorted(atom_angles)[4:]])
+                if ortho and linear:
+                    print('Found square planar')
+                    print('Element: %s | NumBonds: %i | AvgAngle: % .3f' % (self.atom_names[atom_idx], len(atom_bonds), avg_angle))
+                    print('All angles:', atom_angles)
+                    uff_row = uff.lookup(element, n_bonds, avg_angle)
+                    self.atom_types.append(uff_row['type'])
+                    if uff_row['type'] not in self.unique_atom_types:
+                        self.unique_atom_types[uff_row['type']] = uff_row
+                else:
+                    print('Element: %s | NumBonds: %i | AvgAngle: % .3f' % (self.atom_names[atom_idx], len(atom_bonds), avg_angle))
+                    print('All angles:', atom_angles)
+                    raise AtomTypingError("%s atom does not fit square planar geometry" % (self.atom_names[atom_idx]))
+            else:
+                # Throw an error
+                print('Element: %s | NumBonds: %i | AvgAngle: % .3f' % (self.atom_names[atom_idx], len(atom_bonds), avg_angle))
+                print('All angles:', atom_angles)
+                raise AtomTypingError("%s atom cannot be typed" % (self.atom_names[atom_idx]))
+
 
 class Packing:
     """
@@ -374,3 +475,8 @@ class Packing:
                         uc_vectors[0][1] + uc_vectors[1][1] + uc_vectors[2][1],
                         uc_vectors[0][2] + uc_vectors[1][2] + uc_vectors[2][2]])
         return uc_edges
+
+
+class AtomTypingError(Exception):
+    """ Raised when atom type could not be determined """
+    pass
