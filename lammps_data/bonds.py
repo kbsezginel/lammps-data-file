@@ -24,10 +24,10 @@ rcov = [
 ]
 
 
-RADIUS_BUFFER = 0.45
+# RADIUS_BUFFER = 0.45
 
 
-def extrapolate_bonds(atoms):
+def extrapolate_bonds(atoms, RADIUS_BUFFER=0.45):
     bonds = []
 
     atoms_z = list(enumerate(atoms))
@@ -52,7 +52,7 @@ def extrapolate_bonds(atoms):
     return bonds
 
 
-def extrapolate_periodic_bonds(atoms, cell_vectors):
+def extrapolate_periodic_bonds(atoms, cell_vectors, RADIUS_BUFFER=0.45):
     bonds = []
 
     atoms_z = list(enumerate(atoms))
@@ -80,6 +80,12 @@ def extrapolate_periodic_bonds(atoms, cell_vectors):
                     break
 
     return bonds
+
+
+def calculate_distance(p1, p2):
+    x1, y1, z1 = p1
+    x2, y2, z2 = p2
+    distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
 
 
 def calculate_bond_length(bond, atoms, limit=(0.5, 5)):
