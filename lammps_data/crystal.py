@@ -268,7 +268,9 @@ class MOF:
         are crossing the boundaries to calculate all angles correctly.
         If all topology is determined together it would also be more efficient since we can
         calculate the angles and bonds at the same time.
-        """
+        --------------------------------------------------------------------------------------------
+        # NOT COMPLETED !!!
+
         self.bonds, self.periodic_bonds = [], []
         self.angles, self.periodic_angles = [], []
         self.dihedrals, self.periodic_dihedrals = [], []
@@ -308,12 +310,13 @@ class MOF:
             neighbors['angles'] = get_angles(neighbors['bonds'])
             neighbors['angle_values'] = []
             for angle in neighbors['angles']:
-                p1 = [a[3] for a in neighbors['atoms'] if a[3] == angle[0]] # There must a better way of doing this
+                p1 = [a[3] for a in neighbors['atoms'] if a[3] == angle[0]]  # There must a better way of doing this
                 p2 = ...
                 p3 = ...
                 neighbors['angle_values'].append(calculate_angle(p1, p2, p3))
+        """
+        return None
 
-        return bonds
 
     def assign_UFF_atom_types(self, tolerance=10):
         uff = UffTable()
