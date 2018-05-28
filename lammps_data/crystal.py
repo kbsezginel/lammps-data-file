@@ -270,6 +270,7 @@ class MOF:
         calculate the angles and bonds at the same time.
         --------------------------------------------------------------------------------------------
         # NOT COMPLETED !!!
+
         self.bonds, self.periodic_bonds = [], []
         self.angles, self.periodic_angles = [], []
         self.dihedrals, self.periodic_dihedrals = [], []
@@ -315,6 +316,7 @@ class MOF:
                 neighbors['angle_values'].append(calculate_angle(p1, p2, p3))
         """
         return None
+
 
     def assign_UFF_atom_types(self, tolerance=10):
         uff = UffTable()

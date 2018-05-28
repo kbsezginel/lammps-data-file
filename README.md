@@ -1,7 +1,16 @@
+### UNMAINTAINED
+
+This project has reached the end of its development as a LAMMPS force field typing library.
+Feel free to browse the code, but please check out [lammps_interface](https://github.com/kbsezginel/lammps_interface)
+if you want a library to automatically generate LAMMPS input files for molecular dynamics simulations.
+This library is mainly developed for MOFs and supports several force fields such as UFF, UFF4MOF, Dreiding, BTWFF.
+
 # lammps-data-file
 ![travis](https://travis-ci.org/WilmerLab/lammps-data-file.svg?branch=master)
 
 Topology analysis and force field assignment for [Lammps][lammps] simulation package.
+
+
 
 ## Installation
 Python 3.5 is required with additional libraries listed in requirements.txt file.
